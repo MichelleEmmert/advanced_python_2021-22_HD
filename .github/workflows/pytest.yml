@@ -1,7 +1,11 @@
 name: pytest with codecov
+
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, edited]
+   pull_request:
+     types: [opened, synchronize, reopened, edited]
+   push:
+     branches:
+       - main
 
 jobs:
   build:
