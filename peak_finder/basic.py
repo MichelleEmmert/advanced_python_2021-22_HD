@@ -28,17 +28,28 @@ def find_peaks(list_of_intensities):
 
     """
 
+    list_of_intensities_updated = []
+    for element in list_of_intensities:
+        list_of_intensities_updated.append(sum(element))
+
     maximum_list = []
 
-    for pos,value in enumerate(list_of_intensities):
+    for pos,value in enumerate(list_of_intensities_updated):
 
-        if pos == 0 or pos == len(list_of_intensities) - 1:
-            continue
+        if pos == 0:
+            post_value = list_of_intensities_updated[pos+1]
+            if value > post_value:
+                maximum_list.append(value)
+        
+        if pos == len(list_of_intensities_updated) - 1:
+            pre_value = list_of_intensities_updated[pos-1]
+            if pre_value < value:
+                maximum_list.append(value)
 
-        pre_value = list_of_intensities[pos-1]
-        post_value = list_of_intensities[pos+1]
-
-        if pre_value < value > post_value:
-            maximum_list.append(value)
+        if not pos == 0 and not pos == len(list_of_intensities_updated) -1:
+            post_value = list_of_intensities_updated[pos+1]
+            pre_value = list_of_intensities_updated[pos-1]
+            if pre_value < value > post_value:
+                maximum_list.append(value)
 
     return maximum_list

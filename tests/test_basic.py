@@ -16,3 +16,7 @@ import peak_finder
 def test_find_peaks():
     peaks = peak_finder.basic.find_peaks([0, 2, 1])
     assert peaks == [2] 
+
+def test_find_peaks_tuple():
+    peaks = peak_finder.basic.find_peaks([(20,0,0), (0,19,0)])
+    assert peaks == [20]
