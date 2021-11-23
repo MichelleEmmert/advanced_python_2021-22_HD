@@ -1,64 +1,65 @@
+import pandas as pd
+from pathlib import Path
+import plotly.graph_objects as go
 from collections import deque
 import numpy as np
-import plotly.graph_objects as go
+from Bio import SeqIO
+import re
+
+def create_metrics(path_to_aa_file):
+    amino_acids = pd.read_csv(Path(path_to_aa_file))
+    amino_acids = amino_acids.rename(columns={"hydropathy index (Kyte-Doolittle method)": "hydropathy"})
+    amino_acids = amino_acids.set_index("1-letter code")
+    metrics = amino_acids.to_dict("dict")
+
+    return metrics
+
+def get_name(path_to_fasta_file):
+    name = ""
+    with open(Path(path_to_fasta_file)) as handle:
+        for record in SeqIO.parse(handle,"fasta"):
+            name = record.name
+            return name
+
+
+def get_sequence(path_to_fasta_file):
+    sequence = ""
+    with open(path_to_fasta_file,"r") as file:
+        for line in file:
+            if line[0] == ">":
+                continue
+            line = line.rstrip("\n")
+            sequence += line
+
+    bool_value = True
+    if isinstance(sequence, str) == False: bool_value = False
+    if any(i.isdigit() for i in sequence) == True: bool_value = False
+    if "\n" in sequence == True: bool_value = False
+
+    if bool_value == False: return bool_value
+    return sequence
+        
+
 
 class Protein(object):
-
     def __init__(self, name, sequence, dictionary):
         self.name = name
         self.sequence = sequence
         self.dictionary = dictionary
-    
-    def y_data_builder(self, metric = "hydropathy"):
-        """Creates list with values of given column from list of dicts.
 
-        Args:
-            metric (str, optional): Is equal to the key of the metrics dictionary the class was initialized with. 
-            Defaults to "hydropathy".
 
-        Returns:
-            y_data (list): Values of given metric.
-        """
+    def plot(self, metric="hydropathy", window_size=10):
+
         y_data = []
         for aa in self.sequence:
             y_data.append(self.dictionary[metric][aa])
-        return y_data
 
-    def sliding_window(self, y_data, window_size):
-        """Calculates mean of elements of window_size of sequence.
-
-        Args:
-            y_data (list): List of floats or integers which are the elements used to caculate mean.
-            window_size (int, optional): defines of how many elements the mean is calculated.
-
-        Returns:
-            mean_list (list): List with all mean values.
-        """
         sliding_window = deque([], maxlen = window_size)
         mean_list = []
         for y in y_data:
             sliding_window.append(y)
             mean = np.mean(list(sliding_window))
             mean_list.append(mean)
-        return mean_list
-
-    def plot(self, metric="hydropathy", window_size=1):
-        """Create plotly fig object.
-
-        The title of the fig contains protein name, 
-        the x axis is the amino acid position (int) and
-        y axis shows the metric at each given position. 
-        A windows size can be specified to average the metrics using a sliding window 
-
-        Args:
-            metric (str, optional): Is equal to the key of the metrics dictionary the class was initialized with. 
-                Defaults to "hydropathy".
-            window_size (int, optional): Size of the sliding window. Defaults to 1.
-        """
-
-        y_data = self.y_data_builder(self, metric= "hydropathy")
-
-        mean_list = self.sliding_window(self, y_data, window_size)
 
         data = [
             go.Bar(
@@ -69,3 +70,8 @@ class Protein(object):
         fig = go.Figure(data=data)
         fig.update_layout(template="plotly", title=self.name)
         return fig
+
+
+
+if __name__ == '__main__':
+    get_name("data/P32249.fasta")
