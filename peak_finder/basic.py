@@ -27,10 +27,11 @@ def find_peaks(list_of_intensities):
         This is just a place holder for the TDD part :)
 
     """
-
+    
     list_of_intensities_updated = []
     for element in list_of_intensities:
-        list_of_intensities_updated.append(sum(element))
+        if type(element) is tuple:
+            list_of_intensities_updated.append(sum(element))
 
     maximum_list = []
 
